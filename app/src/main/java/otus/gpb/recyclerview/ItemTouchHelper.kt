@@ -1,6 +1,7 @@
 package otus.gpb.recyclerview
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
@@ -12,6 +13,11 @@ import androidx.recyclerview.widget.RecyclerView
 class ItemTouchCallbacks(context : Context) : ItemTouchHelper.Callback(){
 
     private val inbox_icon = ResourcesCompat.getDrawable(context.getResources(), R.drawable.inbox,null)
+    private val paint =  Paint().apply { setARGB(0xFF, 0xA0,0xA0,0xFF) }
+    private val rect = Rect()
+    private lateinit var bitmap :Bitmap
+    private var inbox_icon_size :Int = 0
+    private var once = false
 
     override fun getMovementFlags(
         recyclerView: RecyclerView,
@@ -34,20 +40,26 @@ class ItemTouchCallbacks(context : Context) : ItemTouchHelper.Callback(){
         // При Swipe влево освободившееся место заполнить голубым фоном с иконкой архивирования
         if( isCurrentlyActive && actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
 
-            val rect = Rect(viewHolder.itemView.width + dX.toInt(),
+            rect.set(viewHolder.itemView.width + dX.toInt(),
                 viewHolder.itemView.y.toInt(),
                 viewHolder.itemView.width + viewHolder.itemView.paddingRight,
                 viewHolder.itemView.y.toInt() + viewHolder.itemView.height)
-            val paint =  Paint().apply { setARGB(0xFF, 0xA0,0xA0,0xFF) }
+
             c.drawRect(rect, paint)
 
             if( inbox_icon!= null ) {
-                val inbox_icon_size = viewHolder.itemView.height / 2
-                val bitmap = inbox_icon.toBitmap(inbox_icon_size, inbox_icon_size)
-                c.drawBitmap(bitmap,
-                    (viewHolder.itemView.width - inbox_icon_size - inbox_icon_size / 2).toFloat(),
-                    viewHolder.itemView.y + inbox_icon_size / 2,
-                    null)
+                if( !once ){
+                    once = true
+                    inbox_icon_size = viewHolder.itemView.height / 2
+                    bitmap = inbox_icon.toBitmap(inbox_icon_size, inbox_icon_size)
+                }
+                
+                c.drawBitmap(
+                        bitmap,
+                        (viewHolder.itemView.width - inbox_icon_size - inbox_icon_size / 2).toFloat(),
+                        viewHolder.itemView.y + inbox_icon_size / 2,
+                        null
+                    )
             }
         }
     }
